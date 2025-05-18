@@ -1,0 +1,5 @@
+pycryptodome==3.23.0
+pygetwindow==0.0.9
+pynput==1.8.1
+pyrect==0.2.0
+six==1.17.0
