@@ -1,2 +1,5 @@
 *.venv
-*.cfb
+*.cfd
+helper.py
+*.ds_store
+*.pyc
