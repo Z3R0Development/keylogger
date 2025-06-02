@@ -6,3 +6,5 @@ helper.py
 *.bin
 *.pem
 /keys
+*.txt
+!requirements.txt

